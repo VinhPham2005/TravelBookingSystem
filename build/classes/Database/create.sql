@@ -24,12 +24,13 @@ CREATE TABLE Customer (
     `Name` VARCHAR(255) NOT NULL,
     Birthday DATE,
     phoneNumber VARCHAR(20),
-    Email VARCHAR(255) UNIQUE,
+    Email VARCHAR(255),
     TourBooking VARCHAR(10),
     BookingState ENUM('Pending', 'Confirmed'),
     BookingDate DATE,
     numberOfCustomers INT,
     price DECIMAL(10, 2),
+    UNIQUE (phoneNumber, Email),
     PRIMARY KEY (Id),
     FOREIGN KEY (TourBooking) REFERENCES TOUR(tourId)
 );
@@ -40,11 +41,12 @@ CREATE TABLE Guide (
     `Name` VARCHAR(255) NOT NULL,
     Birthday DATE,
     phoneNumber VARCHAR(20),
-    Email VARCHAR(255) UNIQUE,
+    Email VARCHAR(255),
     guideExperience DECIMAL,
     TourBooking VARCHAR(10),
     BookingState ENUM('cancelled', 'Confirmed'),
     BookingDate DATE,
+    UNIQUE (phoneNumber, Email),
     PRIMARY KEY (Id),
     FOREIGN KEY (TourBooking) REFERENCES TOUR(tourId)
 ); 

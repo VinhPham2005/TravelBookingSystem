@@ -29,26 +29,34 @@ public class CustomerForm extends JFrame {
 
         JLabel lblEmail = new JLabel("Email:");
         JTextField txtEmail = new JTextField();
-
+        
+        JLabel statusLabel = new JLabel("", SwingConstants.CENTER);
+        
+//      Tạo Customer với các chuỗi rỗng hoặc số là 0
+//      Vd: Customer cus = new Customer("", "", 0.0, ...)
         JButton btnSubmit = new JButton("Nhập");
         btnSubmit.addActionListener(e -> {
             String name = txtName.getText();
             String birthday = txtBirthday.getText();
             String phone = txtPhone.getText();
             String email = txtEmail.getText();
-
+//      Set các giá trị cho Customer
             if (name.isEmpty() || birthday.isEmpty() || phone.isEmpty() || email.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin!");
+                statusLabel.setText("<html>⚠️ Vui lòng nhập đầy đủ <br>thông tin!</html>");
+                statusLabel.setForeground(Color.RED);
                 return;
             } else if (!Main.truePhoneNumber(phone)) {
-                JOptionPane.showMessageDialog(this, "Số điện thoại không hợp lệ!");
+                statusLabel.setText("❌ Số điện thoại không hợp lệ!");
+                statusLabel.setForeground(Color.RED);
                 return;
             } else if (!email.contains("@gmail.com") && !email.contains("@yahoo.com")) {
-                JOptionPane.showMessageDialog(this, "Email không hợp lệ!");
+                statusLabel.setText("❌ Email không hợp lệ!");
+                statusLabel.setForeground(Color.RED);
                 return;
             }
-
-            new TourWindow(name, birthday, phone);
+//      Truyền Object vào
+//      new TourWindow(cus);
+            new TourWindow(name, birthday, phone, email);
         });
 
         panel.add(lblName);
@@ -59,16 +67,16 @@ public class CustomerForm extends JFrame {
         panel.add(txtPhone);
         panel.add(lblEmail);
         panel.add(txtEmail);
-        panel.add(new JLabel());
+        panel.add(statusLabel);
         panel.add(btnSubmit);
-
+        
         setContentPane(panel);
         setVisible(true);
     }
 }
 
 class TourWindow extends JFrame {
-    public TourWindow(String name, String birthday, String phone) {
+    public TourWindow(String name, String birthday, String phone, String email) {
         setTitle("Đăng ký tour");
         setSize(400, 200);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -88,7 +96,7 @@ class TourWindow extends JFrame {
         JLabel lblNumberOfPeople = new JLabel("Số người đi:");
         Integer[] number = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
         JComboBox<Integer> cbNumber = new JComboBox<>(number);
-
+        
         JButton btnConfirm = new JButton("Xác nhận");
         btnConfirm.addActionListener(e -> {
             String tour = (String) cbTour.getSelectedItem();
@@ -99,16 +107,23 @@ class TourWindow extends JFrame {
                     "Họ và tên: " + name +
                             "\nNgày sinh: " + birthday +
                             "\nSố điện thoại: " + phone +
+                            "\nEmail: " + email + 
                             "\nTên tour: " + tour +
                             "\nNgày khởi hành: " + date +
                             "\nSố người đi: " + numPeople + " người",
                     "Xác nhận đặt tour",
                     JOptionPane.INFORMATION_MESSAGE);
+            
+//            Từ tour (tên) với date tìm ra tourId 
+//          Có tourId tìm price/người (giá một người, đây không phải phép chia) -> tổng price = price/người *số người
+//          Gán Object. cus.setTourBooking(tourId) ....
         });
 
         JButton btnPay = new JButton("Thanh toán");
         btnPay.addActionListener(e -> {
             int n = (int) cbNumber.getSelectedItem();
+//          Khi click nút này sẽ đưa Object Customer vào
+//          new XacNhanThanhToan(cus)
             new XacNhanThanhToan(name, phone, n);
         });
         panel.add(lblTour);
@@ -132,23 +147,31 @@ class XacNhanThanhToan extends JFrame {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel(new GridLayout(3, 2, 10, 10));
+        JPanel panel = new JPanel(new GridLayout(4, 2, 10, 10));
         panel.setBorder(new EmptyBorder(15, 15, 15, 15));
 
-        double pricePerPerson = 1000000; // giả sử giá tour là 1 triệu/người
-        double total = pricePerPerson * n;
+        double pricePerPerson = 1000000; 
+        double total = pricePerPerson * n;  //Gán cho total = cus.getPrice()
 
         JLabel lblTotal = new JLabel("Tổng tiền thanh toán: ");
         JLabel lblTotalAmount = new JLabel(String.format("%.2f VND", total));
 
         JLabel lblInfo = new JLabel("Nhập mã xác minh: ");
-        JTextField txtCode = new JTextField();
-
+        JTextField txtCode = new JTextField(); //Mã xác minh bằng Id + số người đăng ký (chuyển về chuỗi)
+        
+        JLabel statusLabel = new JLabel("", SwingConstants.CENTER);
+        
+        JButton btnNotPay = new JButton("Để sau");
+        btnNotPay.addActionListener(e -> {
+            JOptionPane.showMessageDialog(this, "Xác nhận chưa thanh toán");
+            dispose();
+        });
         JButton btnPay = new JButton("Xác nhận thanh toán");
         btnPay.addActionListener(e -> {
             String code = txtCode.getText();
             if (!code.equals(phone + String.format("%.2f", total))) {
-                JOptionPane.showMessageDialog(this, "Mã xác minh không đúng!");
+                statusLabel.setText("❌ Mã xác nhận không dúng");
+                statusLabel.setForeground(Color.RED);
                 return;
             }
             JOptionPane.showMessageDialog(this, "Thanh toán thành công!\nCảm ơn bạn đã sử dụng dịch vụ.");
@@ -159,10 +182,12 @@ class XacNhanThanhToan extends JFrame {
         panel.add(lblTotalAmount);
         panel.add(lblInfo);
         panel.add(txtCode);
-
+        panel.add(statusLabel);
         panel.add(new JLabel());
+        panel.add(btnNotPay);
         panel.add(btnPay);
-
+        
+        
         setContentPane(panel);
         setVisible(true);
     }

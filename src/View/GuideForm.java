@@ -15,7 +15,7 @@ public class GuideForm extends JFrame {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel(new GridLayout(2, 2, 10, 10));
+        JPanel panel = new JPanel(new GridLayout(3, 2, 10, 10));
         panel.setBorder(new EmptyBorder(15, 15, 15, 15));
 
         JLabel lblXacMinh = new JLabel("Mã xác minh:");
@@ -29,7 +29,8 @@ public class GuideForm extends JFrame {
                 txtXacMinh.setEchoChar('*'); // ẩn mật khẩu
             }
         });
-
+        JLabel statusLabel = new JLabel("", SwingConstants.CENTER);
+        
         JButton btnSubmit = new JButton("Xác nhận");
         btnSubmit.addActionListener(e -> {
             String code = new String(txtXacMinh.getPassword());
@@ -37,14 +38,18 @@ public class GuideForm extends JFrame {
                 new GuideSignIn();
                 dispose();
             } else {
-                JOptionPane.showMessageDialog(this, "Mã xác minh không đúng!");
+                statusLabel.setText("❌️ Mã xác minh không đúng!");
+                statusLabel.setForeground(Color.RED);
             }
         });
 
         panel.add(lblXacMinh);
         panel.add(txtXacMinh);
         panel.add(showPass);
+        panel.add(statusLabel);
+        panel.add(new JLabel());
         panel.add(btnSubmit);
+        
         setContentPane(panel);
         setVisible(true);
     }
@@ -80,7 +85,10 @@ class GuideSignIn extends JFrame {
         listLangs.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         JScrollPane scrollPane = new JScrollPane(listLangs);
         scrollPane.setPreferredSize(new Dimension(120, 80));
-
+        
+        JLabel statusLabel = new JLabel("", SwingConstants.CENTER);
+//        Tạo Object Guide
+//        Các thông số về tour để chuỗi rỗng
         JButton btnSubmit = new JButton("Tiếp tục");
         btnSubmit.addActionListener(e -> {
             String name = txtName.getText();
@@ -94,21 +102,27 @@ class GuideSignIn extends JFrame {
                     langs.append(", ");
                 langs.append(lang);
             }
-
+//            Gán các giá trị như name, birthday, phone, ...
             if (name.isEmpty() || birthday.isEmpty() || phone.isEmpty()
                     || email.isEmpty() || exp.isEmpty() || langs.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin!");
+                statusLabel.setText("<html>⚠️ Vui lòng nhập đầy đủ <br>thông tin!</html>");
+                statusLabel.setForeground(Color.RED);
                 return;
             } else if (!Main.truePhoneNumber(phone)) {
-                JOptionPane.showMessageDialog(this, "Số điện thoại không hợp lệ!");
+                statusLabel.setText("❌ Số điện thoại không hợp lệ!");
+                statusLabel.setForeground(Color.RED);
                 return;
             } else if (!email.endsWith("@gmail.com")) {
-                JOptionPane.showMessageDialog(this, "Email không hợp lệ!");
+                statusLabel.setText("❌ Email không hợp lệ!");
+                statusLabel.setForeground(Color.RED);
                 return;
             } else if (!Main.isDouble(exp) || Double.parseDouble(exp) < 0) {
-                JOptionPane.showMessageDialog(this, "Kinh nghiệm không hợp lệ!");
+                statusLabel.setText("❌ Kinh nghiệm không hợp lệ!");
+                statusLabel.setForeground(Color.RED);
                 return;
             }
+//            Đoạn này sẽ đưa object Guide vào thay vì các giá trị rời rạc
+//              new BookinTour(Guide);
             new BookingTour(name, birthday, phone, email, exp, langs.toString());
         });
 
@@ -126,7 +140,7 @@ class GuideSignIn extends JFrame {
         panel.add(lblLanguages);
         panel.add(scrollPane);
 
-        panel.add(new JLabel());
+        panel.add(statusLabel);
         panel.add(btnSubmit);
 
         setContentPane(panel);
@@ -151,6 +165,10 @@ class BookingTour extends JFrame {
         JLabel lblDate = new JLabel("Ngày khởi hành:");
         String[] dates = { "20/10/2025", "23/12/2025", "01/01/2026" };
         JComboBox<String> cbDate = new JComboBox<>(dates);
+//        Từ tên và ngày khởi hành -> tourId 
+//          Set giá trị cho TourBooking của Object Guide
+//          Từ TourBooking(tourId) tìm điều kiện ngôn ngữ của Tour -> Check xem Hướng dẫn viên dủ điều kiện không
+
         JButton btnConfirm = new JButton("Xác nhận");
         btnConfirm.addActionListener(e -> {
             String tour = (String) cbTour.getSelectedItem();

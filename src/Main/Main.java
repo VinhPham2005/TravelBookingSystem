@@ -19,30 +19,43 @@ public class Main {
         String[] options = { "Khách hàng", "Hướng dẫn viên", "Quản lý" };
         JList<String> list = new JList<>(options);
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
+        
+        JLabel statusLabel = new JLabel("", SwingConstants.CENTER);
         JButton btnOpen = new JButton("Mở");
         btnOpen.addActionListener(e -> {
             String selected = list.getSelectedValue();
             if (selected == null) {
-                JOptionPane.showMessageDialog(frame, "Vui lòng chọn một mục trước!");
+                statusLabel.setText("⚠️ Vui lòng chọn mục trước!");
+                statusLabel.setForeground(Color.RED);
                 return;
             }
             switch (selected) {
                 case "Khách hàng":
                     new CustomerForm();
+                    statusLabel.setText("✅ Thành công!");
+                    statusLabel.setForeground(Color.GREEN);
                     break;
                 case "Hướng dẫn viên":
                     new GuideForm();
+                    statusLabel.setText("✅ Thành công!");
+                    statusLabel.setForeground(Color.GREEN);
                     break;
                 case "Quản lý":
                     new ManagerForm();
+                    statusLabel.setText("✅ Thành công!");
+                    statusLabel.setForeground(Color.GREEN);
                     break;
             }
         });
-
+        
+        JPanel bottomPanel = new JPanel(new BorderLayout(10, 10));
+        bottomPanel.add(statusLabel, BorderLayout.SOUTH);
+        bottomPanel.add(btnOpen, BorderLayout.CENTER);
+        
+        
         mainPanel.add(new JScrollPane(list), BorderLayout.CENTER);
-        mainPanel.add(btnOpen, BorderLayout.SOUTH);
-
+        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
+        
         frame.setContentPane(mainPanel);
         frame.setVisible(true);
     }

@@ -15,12 +15,14 @@ public class ManagerForm extends JFrame {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel(new GridLayout(2, 2, 10, 10));
+        JPanel panel = new JPanel(new GridLayout(3, 2, 10, 10));
         panel.setBorder(new EmptyBorder(15, 15, 15, 15));
 
         JLabel lblXacMinh = new JLabel("Mã xác minh:");
         JPasswordField txtXacMinh = new JPasswordField();
-
+        
+        JLabel statusLabel = new JLabel("", SwingConstants.CENTER);
+        
         JCheckBox showPass = new JCheckBox("Hiện mật khẩu");
         showPass.addActionListener(e -> {
             if (showPass.isSelected()) {
@@ -37,14 +39,18 @@ public class ManagerForm extends JFrame {
                 new TourInput();
                 dispose();
             } else {
-                JOptionPane.showMessageDialog(this, "Mã xác minh không đúng!");
+                statusLabel.setText("❌️ Mã xác minh không đúng!");
+                statusLabel.setForeground(Color.RED);
             }
         });
 
         panel.add(lblXacMinh);
         panel.add(txtXacMinh);
         panel.add(showPass);
+        panel.add(statusLabel);
+        panel.add(new JLabel());
         panel.add(btnSubmit);
+        
         setContentPane(panel);
         setVisible(true);
     }
@@ -57,7 +63,7 @@ class TourInput extends JFrame {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel(new GridLayout(8, 2, 10, 10));
+        JPanel panel = new JPanel(new GridLayout(9, 2, 10, 10));
         panel.setBorder(new EmptyBorder(15, 15, 15, 15));
 
         JLabel lblStart = new JLabel("Điểm xuất phát:");
@@ -78,37 +84,55 @@ class TourInput extends JFrame {
         JLabel lblNumberOfPassengers = new JLabel("Số khách tối đa:");
         JTextField txtNumberOfPassengers = new JTextField();
 
-        JLabel lblNumberOfGuides = new JLabel("Số hướng dẫn viên:");
+        JLabel lblNumberOfGuides = new JLabel("Số hướng dẫn viên cần:");
         JTextField txtNumberOfGuides = new JTextField();
-
+        
+        JLabel lblGuideCondition = new JLabel("Điều kiện hướng dẫn viên:");
+        String[] languages = { "Tiếng Anh", "Tiếng Hàn", "Tiếng Trung", "Tiếng Nhật" };
+        JComboBox<String> cbLanguage = new JComboBox<>(languages);
+        
+        JLabel statusLabel = new JLabel("", SwingConstants.CENTER);
+        
+//      Tạo Object TOUR với các giá trị chuỗi = "" số = 0
         JButton btnSubmit = new JButton("Nhập");
         btnSubmit.addActionListener(e -> {
             String tourName = txtStart.getText() + " - " + txtDestination.getText();
+            String start = txtStart.getText();
+            String destination = txtDestination.getText();
             String dayStart = txtDayStart.getText();
             String numberOfDaysStr = txtNumberOfDays.getText();
             String numberOfPassengersStr = txtNumberOfPassengers.getText();
             String numberOfGuidesStr = txtNumberOfGuides.getText();
             String price = txtPrice.getText();
-
+            String guideCondition = cbLanguage.getSelectedItem().toString();
+//            set các giá trị cho các attribute của tour
             if (tourName.isEmpty() || price.isEmpty() || numberOfDaysStr.isEmpty() || dayStart.isEmpty()
                     || numberOfPassengersStr.isEmpty() || numberOfGuidesStr.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin!");
+                statusLabel.setText("⚠️ Vui lòng nhập đầy đủ thông tin!");
+                statusLabel.setForeground(Color.RED);
                 return;
             } else if (!Main.isDouble(price)) {
-                JOptionPane.showMessageDialog(this, "Giá không hợp lệ!");
+                statusLabel.setText("❌️ Giá không hợp lệ!");
+                statusLabel.setForeground(Color.RED);
                 return;
             } else if (!Main.isInteger(numberOfPassengersStr)) {
-                JOptionPane.showMessageDialog(this, "Số hành khách tối đa không hợp lệ!");
+                statusLabel.setText("❌️ Số hành khách tối đa không hợp lệ");
+                statusLabel.setForeground(Color.RED);
                 return;
             } else if (!Main.isInteger(numberOfGuidesStr)) {
-                JOptionPane.showMessageDialog(this, "Số hướng dẫn viên không hợp lệ!");
+                statusLabel.setText("❌️ Số hướng dẫn viên không hợp lệ");
+                statusLabel.setForeground(Color.RED);
                 return;
             }
-
+            else {
+                statusLabel.setText("✅ Đăng ký thành công!");
+                statusLabel.setForeground(Color.GREEN);
+            }
             JOptionPane.showMessageDialog(this,
                     "Tour : " + tourName + "\nGiá: " + price + " VND / người\n" + "Thời gian: " + numberOfDaysStr +
                             "\nSố lượng hành khách: " + numberOfPassengersStr + " người" + "\nSố lượng hướng dẫn viên: "
-                            + numberOfGuidesStr + " người",
+                            + numberOfGuidesStr + " người"
+                            + "\nĐiều kiện hướng dẫn viên: " + guideCondition,
                     "Thông tin chuyến đi", JOptionPane.INFORMATION_MESSAGE);
         });
 
@@ -126,9 +150,11 @@ class TourInput extends JFrame {
         panel.add(txtNumberOfPassengers);
         panel.add(lblNumberOfGuides);
         panel.add(txtNumberOfGuides);
-        panel.add(new JLabel());
+        panel.add(lblGuideCondition);
+        panel.add(cbLanguage);
+        panel.add(statusLabel);
         panel.add(btnSubmit);
-
+        
         setContentPane(panel);
         setVisible(true);
     }
