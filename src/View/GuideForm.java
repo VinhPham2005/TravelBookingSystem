@@ -3,13 +3,17 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package View;
+
 import Main.Main;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 
 public class GuideForm extends JFrame {
-    public GuideForm() {
+    public GuideForm(String DB_URL, String DB_USER, String DB_PASSWORD) {
         setTitle("Xác minh hướng dẫn viên");
         setSize(400, 150);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -30,12 +34,12 @@ public class GuideForm extends JFrame {
             }
         });
         JLabel statusLabel = new JLabel("", SwingConstants.CENTER);
-        
+
         JButton btnSubmit = new JButton("Xác nhận");
         btnSubmit.addActionListener(e -> {
             String code = new String(txtXacMinh.getPassword());
             if (code.equals("guide123")) {
-                new GuideSignIn();
+                new GuideSignIn(DB_URL, DB_USER, DB_PASSWORD);
                 dispose();
             } else {
                 statusLabel.setText("❌️ Mã xác minh không đúng!");
@@ -49,14 +53,14 @@ public class GuideForm extends JFrame {
         panel.add(statusLabel);
         panel.add(new JLabel());
         panel.add(btnSubmit);
-        
+
         setContentPane(panel);
         setVisible(true);
     }
 }
 
 class GuideSignIn extends JFrame {
-    public GuideSignIn() {
+    public GuideSignIn(String DB_URL, String DB_USER, String DB_PASSWORD) {
         setTitle("Thông tin hướng dẫn viên");
         setSize(500, 350);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -85,10 +89,10 @@ class GuideSignIn extends JFrame {
         listLangs.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         JScrollPane scrollPane = new JScrollPane(listLangs);
         scrollPane.setPreferredSize(new Dimension(120, 80));
-        
+
         JLabel statusLabel = new JLabel("", SwingConstants.CENTER);
-//        Tạo Object Guide
-//        Các thông số về tour để chuỗi rỗng
+        // Tạo Object Guide
+        // Các thông số về tour để chuỗi rỗng
         JButton btnSubmit = new JButton("Tiếp tục");
         btnSubmit.addActionListener(e -> {
             String name = txtName.getText();
@@ -102,7 +106,7 @@ class GuideSignIn extends JFrame {
                     langs.append(", ");
                 langs.append(lang);
             }
-//            Gán các giá trị như name, birthday, phone, ...
+
             if (name.isEmpty() || birthday.isEmpty() || phone.isEmpty()
                     || email.isEmpty() || exp.isEmpty() || langs.isEmpty()) {
                 statusLabel.setText("<html>⚠️ Vui lòng nhập đầy đủ <br>thông tin!</html>");
@@ -121,9 +125,10 @@ class GuideSignIn extends JFrame {
                 statusLabel.setForeground(Color.RED);
                 return;
             }
-//            Đoạn này sẽ đưa object Guide vào thay vì các giá trị rời rạc
-//              new BookinTour(Guide);
-            new BookingTour(name, birthday, phone, email, exp, langs.toString());
+            // Gán các giá trị như name, birthday, phone, ...
+            // Đoạn này sẽ đưa object Guide vào thay vì các giá trị rời rạc
+            // new BookinTour(Guide);
+            new BookingTour(name, birthday, phone, email, exp, langs.toString(), DB_URL, DB_USER, DB_PASSWORD);
         });
 
         panel.add(lblName);
@@ -149,31 +154,127 @@ class GuideSignIn extends JFrame {
 }
 
 class BookingTour extends JFrame {
-    public BookingTour(String name, String birthday, String phone, String email, String exp, String langs) {
+    static String[] collectTourInfo(String DB_URL, String DB_USER, String DB_PASSWORD) {
+        ArrayList<String> arr = new ArrayList<>();
+        String sql = "select distinct tourName from TOUR";
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                String tenTour = rs.getString("tourName");
+                arr.add(tenTour);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error1");
+            e.printStackTrace();
+        }
+        String[] TourNameArr = arr.toArray(new String[0]);
+        return TourNameArr;
+    }
+
+    static String[] collectTourStartDate(String tourName, String DB_URL, String DB_USER, String DB_PASSWORD) {
+        ArrayList<String> arrStart = new ArrayList<>();
+        String sql = "select dayStart from TOUR where tourName = ?";
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, tourName);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    // Tìm startDay
+                    Date date = rs.getDate("dayStart");
+                    String dayStart = formatter.format(date);
+                    arrStart.add(dayStart);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error2");
+            e.printStackTrace();
+        }
+        return arrStart.toArray(new String[0]);
+    }
+
+    static Double[] collectTourDays(String tourName, String DB_URL, String DB_USER, String DB_PASSWORD) {
+        ArrayList<Double> arr = new ArrayList<>();
+        String sql = "select numberOfDays from TOUR where tourName = ?";
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, tourName);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Double numDays = rs.getDouble("numberOfDays");
+                    arr.add(numDays);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error2");
+            e.printStackTrace();
+        }
+        return arr.toArray(new Double[0]);
+    }
+
+    public BookingTour(String name, String birthday, String phone, String email, String exp, String langs,
+            String DB_URL, String DB_USER, String DB_PASSWORD) {
         setTitle("Chọn tour dẫn");
         setSize(400, 300);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel(new GridLayout(3, 2, 10, 10));
+        JPanel panel = new JPanel(new GridLayout(4, 2, 10, 10));
         panel.setBorder(new EmptyBorder(15, 15, 15, 15));
 
+        // Collect Tour
         JLabel lblTour = new JLabel("Tên tour:");
-        String[] tours = { "Hà Nội - HCM", "Hà Nội - Đà Nẵng", "Hà Nội - Nha Trang" };
+        String[] tours = collectTourInfo(DB_URL, DB_USER, DB_PASSWORD);
         JComboBox<String> cbTour = new JComboBox<>(tours);
+        String tour = (String) cbTour.getSelectedItem();
 
+        // Collect StartDates
         JLabel lblDate = new JLabel("Ngày khởi hành:");
-        String[] dates = { "20/10/2025", "23/12/2025", "01/01/2026" };
+        String[] dates = collectTourStartDate(tour, DB_URL, DB_USER, DB_PASSWORD);
         JComboBox<String> cbDate = new JComboBox<>(dates);
-//        Từ tên và ngày khởi hành -> tourId 
-//          Set giá trị cho TourBooking của Object Guide
-//          Từ TourBooking(tourId) tìm điều kiện ngôn ngữ của Tour -> Check xem Hướng dẫn viên dủ điều kiện không
+
+        JLabel lblNumberOfDays = new JLabel("Số ngày: ");
+        Double[] numberOfDays = collectTourDays(tour, DB_URL, DB_USER, DB_PASSWORD);
+        JComboBox<Double> cbNumberOfDays = new JComboBox<>(numberOfDays);
+
+        if (cbTour.getItemCount() > 0) {
+            String initialTour = (String) cbTour.getSelectedItem();
+            String[] initialDates = collectTourStartDate(initialTour, DB_URL, DB_USER, DB_PASSWORD);
+            Double[] initialDays = collectTourDays(initialTour, DB_URL, DB_USER, DB_PASSWORD);
+            cbDate.setModel(new DefaultComboBoxModel<>(initialDates));
+            cbNumberOfDays.setModel(new DefaultComboBoxModel<>(initialDays));
+        }
+
+        // === PHẦN QUAN TRỌNG NHẤT: THÊM ACTIONLISTENER CHO cbTour ===
+        cbTour.addActionListener(e -> {
+            // 1. Lấy tên tour vừa được chọn
+            String selectedTour = (String) cbTour.getSelectedItem();
+            if (selectedTour != null) {
+                // 2. Gọi lại hàm để lấy dữ liệu mới
+                String[] newDates = collectTourStartDate(selectedTour, DB_URL, DB_USER, DB_PASSWORD);
+                Double[] newDays = collectTourDays(selectedTour, DB_URL, DB_USER, DB_PASSWORD);
+
+                // 3. Cập nhật lại model cho các ComboBox liên quan
+                cbDate.setModel(new DefaultComboBoxModel<>(newDates));
+                cbNumberOfDays.setModel(new DefaultComboBoxModel<>(newDays));
+            }
+        });
+
+        // Từ tên và ngày khởi hành -> tourId
+        // Set giá trị cho TourBooking của Object Guide
+        // Từ TourBooking(tourId) tìm điều kiện ngôn ngữ của Tour -> Check xem Hướng dẫn
+        // viên dủ điều kiện không
 
         JButton btnConfirm = new JButton("Xác nhận");
         btnConfirm.addActionListener(e -> {
-            String tour = (String) cbTour.getSelectedItem();
             String date = (String) cbDate.getSelectedItem();
 
+            // Kết nối database
+            try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            } catch (SQLIntegrityConstraintViolationException dupEx) {
+            } catch (SQLException ex) {
+            }
             JOptionPane.showMessageDialog(this,
                     "Họ và tên: " + name +
                             "\nNgày sinh: " + birthday +
@@ -190,6 +291,8 @@ class BookingTour extends JFrame {
         panel.add(cbTour);
         panel.add(lblDate);
         panel.add(cbDate);
+        panel.add(lblNumberOfDays);
+        panel.add(cbNumberOfDays);
         panel.add(new JLabel());
         panel.add(btnConfirm);
         setContentPane(panel);

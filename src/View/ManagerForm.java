@@ -3,13 +3,15 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package View;
+
 import Main.Main;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.sql.*;
 
 public class ManagerForm extends JFrame {
-    public ManagerForm() {
+    public ManagerForm(String DB_URL, String DB_USER, String DB_PASSWORD) {
         setTitle("Xác minh quản lý");
         setSize(400, 150);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -20,9 +22,9 @@ public class ManagerForm extends JFrame {
 
         JLabel lblXacMinh = new JLabel("Mã xác minh:");
         JPasswordField txtXacMinh = new JPasswordField();
-        
+
         JLabel statusLabel = new JLabel("", SwingConstants.CENTER);
-        
+
         JCheckBox showPass = new JCheckBox("Hiện mật khẩu");
         showPass.addActionListener(e -> {
             if (showPass.isSelected()) {
@@ -36,7 +38,7 @@ public class ManagerForm extends JFrame {
         btnSubmit.addActionListener(e -> {
             String code = new String(txtXacMinh.getPassword());
             if (code.equals("iammanager")) {
-                new TourInput();
+                new TourInput(DB_URL, DB_USER, DB_PASSWORD);
                 dispose();
             } else {
                 statusLabel.setText("❌️ Mã xác minh không đúng!");
@@ -50,14 +52,14 @@ public class ManagerForm extends JFrame {
         panel.add(statusLabel);
         panel.add(new JLabel());
         panel.add(btnSubmit);
-        
+
         setContentPane(panel);
         setVisible(true);
     }
 }
 
 class TourInput extends JFrame {
-    public TourInput() {
+    public TourInput(String DB_URL, String DB_USER, String DB_PASSWORD) {
         setTitle("Nhập thông tin chuyến đi");
         setSize(450, 400);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -86,14 +88,14 @@ class TourInput extends JFrame {
 
         JLabel lblNumberOfGuides = new JLabel("Số hướng dẫn viên cần:");
         JTextField txtNumberOfGuides = new JTextField();
-        
+
         JLabel lblGuideCondition = new JLabel("Điều kiện hướng dẫn viên:");
         String[] languages = { "Tiếng Anh", "Tiếng Hàn", "Tiếng Trung", "Tiếng Nhật" };
         JComboBox<String> cbLanguage = new JComboBox<>(languages);
-        
+
         JLabel statusLabel = new JLabel("", SwingConstants.CENTER);
-        
-//      Tạo Object TOUR với các giá trị chuỗi = "" số = 0
+
+        // Tạo Object TOUR với các giá trị chuỗi = "" số = 0
         JButton btnSubmit = new JButton("Nhập");
         btnSubmit.addActionListener(e -> {
             String tourName = txtStart.getText() + " - " + txtDestination.getText();
@@ -105,7 +107,7 @@ class TourInput extends JFrame {
             String numberOfGuidesStr = txtNumberOfGuides.getText();
             String price = txtPrice.getText();
             String guideCondition = cbLanguage.getSelectedItem().toString();
-//            set các giá trị cho các attribute của tour
+
             if (tourName.isEmpty() || price.isEmpty() || numberOfDaysStr.isEmpty() || dayStart.isEmpty()
                     || numberOfPassengersStr.isEmpty() || numberOfGuidesStr.isEmpty()) {
                 statusLabel.setText("⚠️ Vui lòng nhập đầy đủ thông tin!");
@@ -123,10 +125,16 @@ class TourInput extends JFrame {
                 statusLabel.setText("❌️ Số hướng dẫn viên không hợp lệ");
                 statusLabel.setForeground(Color.RED);
                 return;
-            }
-            else {
+            } else {
                 statusLabel.setText("✅ Đăng ký thành công!");
                 statusLabel.setForeground(Color.GREEN);
+            }
+            // set các giá trị cho các attribute của tour
+
+            // Kết nối database
+            try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            } catch (SQLIntegrityConstraintViolationException dupEx) {
+            } catch (SQLException ex) {
             }
             JOptionPane.showMessageDialog(this,
                     "Tour : " + tourName + "\nGiá: " + price + " VND / người\n" + "Thời gian: " + numberOfDaysStr +
@@ -154,7 +162,7 @@ class TourInput extends JFrame {
         panel.add(cbLanguage);
         panel.add(statusLabel);
         panel.add(btnSubmit);
-        
+
         setContentPane(panel);
         setVisible(true);
     }
