@@ -5,6 +5,8 @@
 package View;
 
 import Main.Main;
+import Model.Tour;
+import TourDAO.TourDAO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -96,6 +98,7 @@ class TourInput extends JFrame {
         JLabel statusLabel = new JLabel("", SwingConstants.CENTER);
 
         // Tạo Object TOUR với các giá trị chuỗi = "" số = 0
+        Tour tour = new Tour();
         JButton btnSubmit = new JButton("Nhập");
         btnSubmit.addActionListener(e -> {
             String tourName = txtStart.getText() + " - " + txtDestination.getText();
@@ -132,16 +135,57 @@ class TourInput extends JFrame {
             // set các giá trị cho các attribute của tour
 
             // Kết nối database
-            try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-            } catch (SQLIntegrityConstraintViolationException dupEx) {
-            } catch (SQLException ex) {
-            }
-            JOptionPane.showMessageDialog(this,
+             try {
+                // chuyển đổi các giá trị số
+                float daysValue = Float.parseFloat(numberOfDaysStr);
+                double priceValue = Double.parseDouble(price);
+                int passengersValue = Integer.parseInt(numberOfPassengersStr);
+                int guidesValue = Integer.parseInt(numberOfGuidesStr);
+
+                // các hàm 'set' để gán giá trị
+                tour.setTourName(tourName);
+                tour.setStartFrom(start);
+                tour.setDestination(destination);
+                tour.setDayStart(dayStart);
+                tour.setNumberOfDays(daysValue);
+                tour.setPrice(priceValue);
+                tour.setNumberOfPassengers(passengersValue);
+                tour.setNumberOfGuides(guidesValue);
+                tour.setLanguageGuideNeed(guideCondition);
+
+                // lưu vào database
+                TourDAO tourDAO = new TourDAO();
+                tourDAO.addTour(tour);
+                
+                // cập nhật trạng thái thành công
+                statusLabel.setText("✅ Thêm tour thành công!");
+                statusLabel.setForeground(Color.GREEN);
+                
+                // hiển thị lại thông tin tour đã tạo
+                 JOptionPane.showMessageDialog(this,
                     "Tour : " + tourName + "\nGiá: " + price + " VND / người\n" + "Thời gian: " + numberOfDaysStr +
-                            "\nSố lượng hành khách: " + numberOfPassengersStr + " người" + "\nSố lượng hướng dẫn viên: "
-                            + numberOfGuidesStr + " người"
-                            + "\nĐiều kiện hướng dẫn viên: " + guideCondition,
+                    "\nSố lượng hành khách: " + numberOfPassengersStr + " người" + "\nSố lượng hướng dẫn viên: "
+                    + numberOfGuidesStr + " người"
+                    + "\nĐiều kiện hướng dẫn viên: " + guideCondition,
                     "Thông tin chuyến đi", JOptionPane.INFORMATION_MESSAGE);
+
+            } catch (NumberFormatException ex) {
+                statusLabel.setText("❌️ Lỗi định dạng số!");
+                statusLabel.setForeground(Color.RED);
+            } catch (SQLException ex) {
+                statusLabel.setText("❌️ Lỗi Database!");
+                statusLabel.setForeground(Color.RED);
+                JOptionPane.showMessageDialog(this, "Lỗi Database: " + ex.getMessage());
+            } catch (Exception ex) {
+                statusLabel.setText("❌️ Lỗi không xác định!");
+                statusLabel.setForeground(Color.RED);
+            }
+//            JOptionPane.showMessageDialog(this,
+//                    "Tour : " + tourName + "\nGiá: " + price + " VND / người\n" + "Thời gian: " + numberOfDaysStr +
+//                            "\nSố lượng hành khách: " + numberOfPassengersStr + " người" + "\nSố lượng hướng dẫn viên: "
+//                            + numberOfGuidesStr + " người"
+//                            + "\nĐiều kiện hướng dẫn viên: " + guideCondition,
+//                    "Thông tin chuyến đi", JOptionPane.INFORMATION_MESSAGE);
         });
 
         panel.add(lblStart);

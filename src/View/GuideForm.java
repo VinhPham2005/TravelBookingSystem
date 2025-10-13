@@ -4,7 +4,9 @@
  */
 package View;
 
+import Guide_dao.GuideDAO;
 import Main.Main;
+import Model.Guide;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -95,6 +97,7 @@ class GuideSignIn extends JFrame {
         // Các thông số về tour để chuỗi rỗng
         JButton btnSubmit = new JButton("Tiếp tục");
         btnSubmit.addActionListener(e -> {
+            Guide guide = new Guide();
             String name = txtName.getText();
             String birthday = txtBirthday.getText();
             String phone = txtPhone.getText();
@@ -125,10 +128,11 @@ class GuideSignIn extends JFrame {
                 statusLabel.setForeground(Color.RED);
                 return;
             }
-            // Gán các giá trị như name, birthday, phone, ...
-            // Đoạn này sẽ đưa object Guide vào thay vì các giá trị rời rạc
-            // new BookinTour(Guide);
-            new BookingTour(name, birthday, phone, email, exp, langs.toString(), DB_URL, DB_USER, DB_PASSWORD);
+            GuideDAO guideDAO = new GuideDAO();
+            guide = guideDAO.setGuide(name, birthday, phone, email, Float.parseFloat(exp), langs.toString());
+//            Đoạn này sẽ đưa object Guide vào thay vì các giá trị rời rạc
+//              new BookinTour(Guide);
+            new BookingTour(guide, DB_URL, DB_USER, DB_PASSWORD);
         });
 
         panel.add(lblName);
@@ -213,7 +217,7 @@ class BookingTour extends JFrame {
         return arr.toArray(new Double[0]);
     }
 
-    public BookingTour(String name, String birthday, String phone, String email, String exp, String langs,
+    public BookingTour(Guide guide,
             String DB_URL, String DB_USER, String DB_PASSWORD) {
         setTitle("Chọn tour dẫn");
         setSize(400, 300);
@@ -261,28 +265,40 @@ class BookingTour extends JFrame {
             }
         });
 
-        // Từ tên và ngày khởi hành -> tourId
-        // Set giá trị cho TourBooking của Object Guide
-        // Từ TourBooking(tourId) tìm điều kiện ngôn ngữ của Tour -> Check xem Hướng dẫn
-        // viên dủ điều kiện không
+       
 
         JButton btnConfirm = new JButton("Xác nhận");
         btnConfirm.addActionListener(e -> {
+            guide.setTourBooking((String) cbTour.getSelectedItem() + " - " + (String) cbDate.getSelectedItem());
+            String tourName = (String) cbTour.getSelectedItem();
             String date = (String) cbDate.getSelectedItem();
-
-            // Kết nối database
-            try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-            } catch (SQLIntegrityConstraintViolationException dupEx) {
-            } catch (SQLException ex) {
+            
+            if (!new GuideDAO().guideCheck(guide, tourName, date)) {
+                JOptionPane.showMessageDialog(this,
+                        "❌️ Bạn không đủ điều kiện ngôn ngữ để dẫn tour này!",
+                        "Lỗi",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
             }
+            else {
+                JOptionPane.showMessageDialog(this,
+                        "✅️ Bạn đủ điều kiện ngôn ngữ để dẫn tour này!",
+                        "Thành công",
+                        JOptionPane.INFORMATION_MESSAGE);
+                guide.setBookingState("Confirmed");
+                guide.setBookingDate(java.time.LocalDate.now().toString());
+                // Thêm chức năng add vào db sau 
+            }
+            
+            
             JOptionPane.showMessageDialog(this,
-                    "Họ và tên: " + name +
-                            "\nNgày sinh: " + birthday +
-                            "\nSố điện thoại: " + phone +
-                            "\nEmail: " + email +
-                            "\nKinh nghiệm: " + exp + " năm" +
-                            "\nNgoại ngữ: " + langs +
-                            "\nTên tour: " + tour +
+                    "Họ và tên: " + guide.getName() +
+                            "\nNgày sinh: " + guide.getBirthday() +
+                            "\nSố điện thoại: " + guide.getPhoneNumber() +
+                            "\nEmail: " + guide.getEmail() +
+                            "\nKinh nghiệm: " + guide.getGuideExperience() + " năm" +
+                            "\nNgoại ngữ: " + guide.getForeignLanguageAsString() +
+                            "\nTên tour: " + tourName +
                             "\nNgày khởi hành: " + date,
                     "Xác nhận dẫn tour",
                     JOptionPane.INFORMATION_MESSAGE);
