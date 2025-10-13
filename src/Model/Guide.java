@@ -37,4 +37,3 @@ public class Guide extends Human {
         return Langs.substring(0, Langs.length() - 2);
     }
 }
-

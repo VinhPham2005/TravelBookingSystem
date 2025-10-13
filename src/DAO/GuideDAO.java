@@ -19,22 +19,51 @@ public class GuideDAO {
         return g;
     }
 
-    public boolean guideCheck(Guide g) {
+    // Tìm tourId khi biết tourName và dayStart và numberOfDay
+    public static String findTourId(String tourName, String dayStart, double numberOfDay) throws ClassNotFoundException {
+        String tourId = null;
+        try { 
+            Connection con = GetConnectionDAO.getConnection();
+            String sql = "SELECT tourId FROM tour WHERE tourName = ? AND dayStart = STR_TO_DATE(?, '%d/%m/%Y') AND numberOfDays = ?";
+            PreparedStatement stmt = con.prepareStatement(sql);
+            stmt.setString(1, tourName);
+            stmt.setString(2, dayStart);
+            stmt.setDouble(3, numberOfDay);
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                tourId = rs.getString("tourId");
+            } else {
+                System.out.println("Không tìm thấy tour phù hợp.");
+            }
+
+            rs.close();
+            stmt.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Lỗi truy vấn findTourId: " + e.getMessage());
+        }
+        return tourId;
+    }
+
+    public boolean guideCheck(Guide g, String tourId) {
         try {
-            GetConnectionDAO gcd = new GetConnectionDAO();
-            Connection con = gcd.getConnection();
-            String sql = "SELECT languageGuideNeed FROM tour WHERE tourName = ? AND dayStart = ?";
+            Connection con = GetConnectionDAO.getConnection();
+            String sql = "SELECT languageGuideNeed FROM TOUR WHERE tourId = ?";
             PreparedStatement ps = con.prepareStatement(sql);
-            String tName = g.getTourBooking().split(" - ")[0];
-            String tDate = g.getTourBooking().split(" - ")[1];
-            ps.setString(1, tName);
-            ps.setString(2, tDate);
+            ps.setString(1, tourId);
 
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 String langNeed = rs.getString("languageGuideNeed");
                 List<String> listLangNeed = Arrays.asList(langNeed.split(", "));
-                return g.getForeignLanguage().containsAll(listLangNeed);
+
+                // Kiểm tra xem hướng dẫn viên có biết ít nhất một ngôn ngữ cần thiết không
+                for (String lang : g.getForeignLanguage()) {
+                    if (listLangNeed.contains(lang)) {
+                        return true; 
+                    }
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();

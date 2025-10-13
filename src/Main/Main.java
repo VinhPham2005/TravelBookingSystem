@@ -8,6 +8,11 @@ import java.awt.*;
 
 public class Main {
     public static void main(String[] args) {
+//        Thông tin CSDL
+        String DB_URL = "jdbc:mysql://localhost:3306/TravelBookingSystemApp";
+        String DB_USER = "root";
+        String DB_PASSWORD = "Vinh1234@"; // đổi nếu bạn có mật khẩu MySQL
+        
         JFrame frame = new JFrame("Trang chủ");
         frame.setSize(300, 200);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -31,17 +36,17 @@ public class Main {
             }
             switch (selected) {
                 case "Khách hàng":
-                    new CustomerForm();
+                    new CustomerForm(DB_URL, DB_USER, DB_PASSWORD);
                     statusLabel.setText("✅ Thành công!");
                     statusLabel.setForeground(Color.GREEN);
                     break;
                 case "Hướng dẫn viên":
-                    new GuideForm();
+                    new GuideForm(DB_URL, DB_USER, DB_PASSWORD);
                     statusLabel.setText("✅ Thành công!");
                     statusLabel.setForeground(Color.GREEN);
                     break;
                 case "Quản lý":
-                    new ManagerForm();
+                    new ManagerForm(DB_URL, DB_USER, DB_PASSWORD);
                     statusLabel.setText("✅ Thành công!");
                     statusLabel.setForeground(Color.GREEN);
                     break;
