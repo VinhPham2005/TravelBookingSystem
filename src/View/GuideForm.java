@@ -1,18 +1,13 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package View;
 
 import Guide_dao.GuideDAO;
 import Main.Main;
 import Model.Guide;
+import TourDAO.TourDAO;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.sql.*;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 
 public class GuideForm extends JFrame {
     public GuideForm(String DB_URL, String DB_USER, String DB_PASSWORD) {
@@ -42,6 +37,7 @@ public class GuideForm extends JFrame {
             String code = new String(txtXacMinh.getPassword());
             if (code.equals("guide123")) {
                 new GuideSignIn(DB_URL, DB_USER, DB_PASSWORD);
+                dispose();
                 dispose();
             } else {
                 statusLabel.setText("❌️ Mã xác minh không đúng!");
@@ -130,9 +126,10 @@ class GuideSignIn extends JFrame {
             }
             GuideDAO guideDAO = new GuideDAO();
             guide = guideDAO.setGuide(name, birthday, phone, email, Float.parseFloat(exp), langs.toString());
-//            Đoạn này sẽ đưa object Guide vào thay vì các giá trị rời rạc
-//              new BookinTour(Guide);
+            // Đoạn này sẽ đưa object Guide vào thay vì các giá trị rời rạc
+            // new BookinTour(Guide);
             new BookingTour(guide, DB_URL, DB_USER, DB_PASSWORD);
+            dispose();
         });
 
         panel.add(lblName);
@@ -158,64 +155,6 @@ class GuideSignIn extends JFrame {
 }
 
 class BookingTour extends JFrame {
-    static String[] collectTourInfo(String DB_URL, String DB_USER, String DB_PASSWORD) {
-        ArrayList<String> arr = new ArrayList<>();
-        String sql = "select distinct tourName from TOUR";
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-                PreparedStatement ps = conn.prepareStatement(sql);
-                ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                String tenTour = rs.getString("tourName");
-                arr.add(tenTour);
-            }
-        } catch (SQLException e) {
-            System.err.println("Error1");
-            e.printStackTrace();
-        }
-        String[] TourNameArr = arr.toArray(new String[0]);
-        return TourNameArr;
-    }
-
-    static String[] collectTourStartDate(String tourName, String DB_URL, String DB_USER, String DB_PASSWORD) {
-        ArrayList<String> arrStart = new ArrayList<>();
-        String sql = "select dayStart from TOUR where tourName = ?";
-        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-                PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, tourName);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    // Tìm startDay
-                    Date date = rs.getDate("dayStart");
-                    String dayStart = formatter.format(date);
-                    arrStart.add(dayStart);
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error2");
-            e.printStackTrace();
-        }
-        return arrStart.toArray(new String[0]);
-    }
-
-    static Double[] collectTourDays(String tourName, String DB_URL, String DB_USER, String DB_PASSWORD) {
-        ArrayList<Double> arr = new ArrayList<>();
-        String sql = "select numberOfDays from TOUR where tourName = ?";
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-                PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, tourName);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Double numDays = rs.getDouble("numberOfDays");
-                    arr.add(numDays);
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error2");
-            e.printStackTrace();
-        }
-        return arr.toArray(new Double[0]);
-    }
 
     public BookingTour(Guide guide,
             String DB_URL, String DB_USER, String DB_PASSWORD) {
@@ -224,73 +163,119 @@ class BookingTour extends JFrame {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel(new GridLayout(4, 2, 10, 10));
+        JPanel panel = new JPanel(new GridLayout(5, 2, 10, 10));
         panel.setBorder(new EmptyBorder(15, 15, 15, 15));
+        TourDAO tourDao = new TourDAO();
 
-        // Collect Tour
         JLabel lblTour = new JLabel("Tên tour:");
-        String[] tours = collectTourInfo(DB_URL, DB_USER, DB_PASSWORD);
+        String[] tours = tourDao.collectTourInfo(DB_URL, DB_USER, DB_PASSWORD);
         JComboBox<String> cbTour = new JComboBox<>(tours);
-        String tour = (String) cbTour.getSelectedItem();
 
-        // Collect StartDates
         JLabel lblDate = new JLabel("Ngày khởi hành:");
-        String[] dates = collectTourStartDate(tour, DB_URL, DB_USER, DB_PASSWORD);
-        JComboBox<String> cbDate = new JComboBox<>(dates);
+        JComboBox<String> cbDate = new JComboBox<>(); // Khởi tạo rỗng
 
         JLabel lblNumberOfDays = new JLabel("Số ngày: ");
-        Double[] numberOfDays = collectTourDays(tour, DB_URL, DB_USER, DB_PASSWORD);
-        JComboBox<Double> cbNumberOfDays = new JComboBox<>(numberOfDays);
+        JComboBox<Double> cbNumberOfDays = new JComboBox<>(); // Khởi tạo rỗng
+
+        JLabel statusLabel = new JLabel("Trạng thái Tour: ");
+        JLabel lblTourState = new JLabel("");
 
         if (cbTour.getItemCount() > 0) {
             String initialTour = (String) cbTour.getSelectedItem();
-            String[] initialDates = collectTourStartDate(initialTour, DB_URL, DB_USER, DB_PASSWORD);
-            Double[] initialDays = collectTourDays(initialTour, DB_URL, DB_USER, DB_PASSWORD);
+            String[] initialDates = tourDao.collectTourStartDate(initialTour, DB_URL, DB_USER, DB_PASSWORD);
             cbDate.setModel(new DefaultComboBoxModel<>(initialDates));
-            cbNumberOfDays.setModel(new DefaultComboBoxModel<>(initialDays));
+
+            if (cbDate.getItemCount() > 0) {
+                String initialDate = (String) cbDate.getSelectedItem();
+                Double[] initialDays = tourDao.collectTourDays(initialTour, initialDate, DB_URL, DB_USER, DB_PASSWORD);
+                cbNumberOfDays.setModel(new DefaultComboBoxModel<>(initialDays));
+            }
+            // Cập nhật trạng thái ngay lần đầu tải
+            updateTourGuideStatus(cbTour, cbDate, cbNumberOfDays, lblTourState);
         }
 
-        // === PHẦN QUAN TRỌNG NHẤT: THÊM ACTIONLISTENER CHO cbTour ===
+        // === THÊM ACTIONLISTENER CHO cbTour ===
         cbTour.addActionListener(e -> {
-            // 1. Lấy tên tour vừa được chọn
             String selectedTour = (String) cbTour.getSelectedItem();
             if (selectedTour != null) {
-                // 2. Gọi lại hàm để lấy dữ liệu mới
-                String[] newDates = collectTourStartDate(selectedTour, DB_URL, DB_USER, DB_PASSWORD);
-                Double[] newDays = collectTourDays(selectedTour, DB_URL, DB_USER, DB_PASSWORD);
-
-                // 3. Cập nhật lại model cho các ComboBox liên quan
+                String[] newDates = tourDao.collectTourStartDate(selectedTour, DB_URL, DB_USER, DB_PASSWORD);
                 cbDate.setModel(new DefaultComboBoxModel<>(newDates));
-                cbNumberOfDays.setModel(new DefaultComboBoxModel<>(newDays));
+
+                if (cbDate.getItemCount() > 0) {
+                    String firstDate = (String) cbDate.getSelectedItem();
+                    Double[] newNumDays = tourDao.collectTourDays(selectedTour, firstDate, DB_URL, DB_USER,
+                            DB_PASSWORD);
+                    cbNumberOfDays.setModel(new DefaultComboBoxModel<>(newNumDays));
+                }
+                updateTourGuideStatus(cbTour, cbDate, cbNumberOfDays, lblTourState);
             }
         });
 
-       
+        // === THÊM ACTIONLISTENER CHO cbDate ===
+        cbDate.addActionListener(e -> {
+            String selectedTour = (String) cbTour.getSelectedItem();
+            String selectedDate = (String) cbDate.getSelectedItem();
+            if (selectedTour != null && selectedDate != null) {
+                Double[] newNumDays = tourDao.collectTourDays(selectedTour, selectedDate, DB_URL, DB_USER, DB_PASSWORD);
+                cbNumberOfDays.setModel(new DefaultComboBoxModel<>(newNumDays));
+                updateTourGuideStatus(cbTour, cbDate, cbNumberOfDays, lblTourState);
+            }
+        });
 
         JButton btnConfirm = new JButton("Xác nhận");
         btnConfirm.addActionListener(e -> {
-            guide.setTourBooking((String) cbTour.getSelectedItem() + " - " + (String) cbDate.getSelectedItem());
             String tourName = (String) cbTour.getSelectedItem();
             String date = (String) cbDate.getSelectedItem();
-            
-            if (!new GuideDAO().guideCheck(guide, tourName, date)) {
+            Double numDays = (Double) cbNumberOfDays.getSelectedItem();
+            String tourId = null;
+
+            try {
+                tourId = GuideDAO.findTourId(tourName, date, numDays);
+                System.out.println("Tour: " + tourName + ", date: " + date + ", numDays: " + numDays);
+                System.out.println("Tour ID: " + tourId);
+
+            } catch (ClassNotFoundException e1) {
+                e1.printStackTrace();
+            }
+            if (tourId == null) {
+                JOptionPane.showMessageDialog(this,
+                        "❌️ Không tìm thấy tour phù hợp!",
+                        "Lỗi",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            String tourGuideState = null;
+            try {
+                tourGuideState = GuideDAO.findTourGuideState(tourId);
+            } catch (ClassNotFoundException e2) {
+                e2.printStackTrace();
+            }
+
+            if ("Full".equalsIgnoreCase(tourGuideState)) {
+                JOptionPane.showMessageDialog(this, "⚠️ Tour này đã đủ người! Vui lòng chọn tour khác.", "Tour Đã Đầy",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            if (!new GuideDAO().guideCheck(guide, tourId)) {
                 JOptionPane.showMessageDialog(this,
                         "❌️ Bạn không đủ điều kiện ngôn ngữ để dẫn tour này!",
                         "Lỗi",
                         JOptionPane.ERROR_MESSAGE);
                 return;
-            }
-            else {
+            } else {
                 JOptionPane.showMessageDialog(this,
                         "✅️ Bạn đủ điều kiện ngôn ngữ để dẫn tour này!",
                         "Thành công",
                         JOptionPane.INFORMATION_MESSAGE);
+
+                // sau khi đủ điều kiện thì set các thông tin tour cho guide
+                guide.setTourBooking(tourId);
                 guide.setBookingState("Confirmed");
                 guide.setBookingDate(java.time.LocalDate.now().toString());
-                // Thêm chức năng add vào db sau 
+                // Thêm chức năng add vào db sau
             }
-            
-            
+
             JOptionPane.showMessageDialog(this,
                     "Họ và tên: " + guide.getName() +
                             "\nNgày sinh: " + guide.getBirthday() +
@@ -309,9 +294,46 @@ class BookingTour extends JFrame {
         panel.add(cbDate);
         panel.add(lblNumberOfDays);
         panel.add(cbNumberOfDays);
+        panel.add(statusLabel);
+        panel.add(lblTourState);
         panel.add(new JLabel());
         panel.add(btnConfirm);
         setContentPane(panel);
         setVisible(true);
+    }
+
+    private void updateTourGuideStatus(JComboBox<String> cbTour, JComboBox<String> cbDate,
+            JComboBox<Double> cbNumberOfDays, JLabel lblTourState) {
+        String selectedTour = (String) cbTour.getSelectedItem();
+        String selectedDate = (String) cbDate.getSelectedItem();
+        Double selectedDays = (Double) cbNumberOfDays.getSelectedItem();
+
+        if (selectedTour != null && selectedDate != null && selectedDays != null) {
+            String tourId = null;
+            try {
+                tourId = GuideDAO.findTourId(selectedTour, selectedDate, selectedDays);
+            } catch (ClassNotFoundException e2) {
+                e2.printStackTrace();
+            }
+            if (tourId != null) {
+                String tourGuideState = null;
+                try {
+                    tourGuideState = GuideDAO.findTourGuideState(tourId);
+                } catch (ClassNotFoundException e2) {
+                    e2.printStackTrace();
+                }
+                lblTourState.setText(tourGuideState);
+                if ("Full".equalsIgnoreCase(tourGuideState)) {
+                    lblTourState.setForeground(Color.RED);
+                } else {
+                    lblTourState.setForeground(new Color(0, 102, 0)); // Màu xanh lá cây đậm
+                }
+            } else {
+                lblTourState.setText("Không tìm thấy");
+                lblTourState.setForeground(Color.ORANGE);
+            }
+        } else {
+            lblTourState.setText("");
+        }
     }
 }
