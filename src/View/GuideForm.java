@@ -11,6 +11,7 @@ import DAO.GetConnectionDAO;
 import DAO.GuideDAO;
 
 import java.awt.*;
+import java.sql.SQLException;
 
 public class GuideForm extends JFrame {
     public GuideForm(String DB_URL, String DB_USER, String DB_PASSWORD) {
@@ -128,6 +129,25 @@ class GuideSignIn extends JFrame {
             guide = guideDAO.setGuide(name, birthday, phone, email, Float.parseFloat(exp), langs.toString());
             // Đoạn này sẽ đưa object Guide vào thay vì các giá trị rời rạc
             // new BookinTour(Guide);
+            try {
+                if (GuideDAO.check(guide) != null) {
+                    String field = null;
+                    try {
+                        field = GuideDAO.check(guide);
+                    } catch (Exception e1) {
+                        e1.printStackTrace();
+                    }
+                    if (field.equals("email")) {
+                        statusLabel.setText("❌ Email đã tồn tại!");
+                    } else if (field.equals("phone")) {
+                        statusLabel.setText("❌ Số điện thoại đã tồn tại!");
+                    }
+                    statusLabel.setForeground(Color.RED);
+                    return;
+                }
+            } catch (ClassNotFoundException | SQLException e1) {
+                e1.printStackTrace();
+            }
             new BookingTour(guide, DB_URL, DB_USER, DB_PASSWORD);
             dispose();
         });
@@ -273,6 +293,11 @@ class BookingTour extends JFrame {
                 guide.setTourBooking(tourId);
                 guide.setBookingState("Confirmed");
                 guide.setBookingDate(java.time.LocalDate.now().toString());
+                try {
+                    GuideDAO.addGuide(guide);
+                } catch (ClassNotFoundException e1) {
+                    e1.printStackTrace();
+                }
                 // Thêm chức năng add vào db sau
             }
 

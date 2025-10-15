@@ -9,6 +9,7 @@ import javax.swing.border.EmptyBorder;
 
 import java.awt.*;
 import java.math.BigDecimal;
+import java.sql.SQLException;
 
 public class CustomerForm extends JFrame {
     public CustomerForm(String DB_URL, String DB_USER, String DB_PASSWORD) {
@@ -65,8 +66,25 @@ public class CustomerForm extends JFrame {
             customer.setPhoneNumber(phone);
             customer.setEmail(email);
             customer.chuanHoaTenVaNgaySinh();
+            try {
+                if(CustomerDAO.check(customer) != null) {
+                    String field = CustomerDAO.check(customer);
+                    if(field.equals("email")) {
+                        statusLabel.setText("❌ Email đã tồn tại!");
+                    } else if(field.equals("phone")) {
+                        statusLabel.setText("❌ Số điện thoại đã tồn tại!");
+                    }
+                    statusLabel.setForeground(Color.RED);
+                    return;
+                }
+                else {
+                    new TourWindow(customer, DB_URL, DB_USER, DB_PASSWORD);
+                }
+            } catch (SQLException e1) {
+                
+                e1.printStackTrace();
+            }
 
-            new TourWindow(customer, DB_URL, DB_USER, DB_PASSWORD);
             dispose();
         });
 

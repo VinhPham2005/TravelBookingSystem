@@ -1,5 +1,6 @@
 package DAO;
 
+import Model.Customer;
 import Model.Guide;
 import java.util.*;
 import java.sql.*;
@@ -95,4 +96,62 @@ public class GuideDAO {
         return false;
     }
     
+    public static void addGuide(Guide guide) throws ClassNotFoundException {
+        try (Connection conn = GetConnectionDAO.getConnection()) {
+            String sql = "INSERT INTO guide (name, birthday, phoneNumber, email, guideExperience, TourBooking, BookingState, BookingDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+
+            stmt.setString(1, guide.getName());
+            stmt.setString(2, guide.getBirthday());
+            stmt.setString(3, guide.getPhoneNumber());
+            stmt.setString(4, guide.getEmail());
+            stmt.setDouble(5, guide.getGuideExperience());
+            stmt.setString(6, guide.getTourBooking());
+            stmt.setString(7, guide.getBookingState());
+            stmt.setString(8, guide.getBookingDate());
+
+            int rows = stmt.executeUpdate();
+            if (rows > 0) {
+                System.out.println("Thêm hướng dẫn viên thành công!");
+            } else {
+                System.out.println("Không thể thêm hướng dẫn viên.");
+            }
+
+            stmt.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Lỗi khi thêm khách hàng: " + e.getMessage());
+        }
+    }
+
+    public static String check(Guide guide) throws SQLException, ClassNotFoundException {
+        String dataExists = null;
+        try (Connection conn = GetConnectionDAO.getConnection()) {
+            String sql1 = "SELECT email FROM guide WHERE email = ?";
+            PreparedStatement stmt1 = conn.prepareStatement(sql1);
+            stmt1.setString(1, guide.getEmail());
+
+            String sql2 = "SELECT phoneNumber FROM guide WHERE phoneNumber = ?";
+            PreparedStatement stmt2 = conn.prepareStatement(sql2);
+            stmt2.setString(1, guide.getPhoneNumber());
+
+            ResultSet rs1 = stmt1.executeQuery();
+            if (rs1.next()) {
+                dataExists = "email";
+            }
+            rs1.close();
+
+            if (dataExists == null) {
+                ResultSet rs2 = stmt2.executeQuery();
+                if (rs2.next()) {
+                    dataExists = "phone";
+                }
+                rs2.close();
+            }
+
+            stmt1.close();
+            stmt2.close();
+        }
+        return dataExists;
+    }
 }
