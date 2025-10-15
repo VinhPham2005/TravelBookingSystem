@@ -16,7 +16,9 @@ public class GetConnectionDAO {
 
     public static void main(String[] args) throws ClassNotFoundException, SQLException {
         Connection con = GetConnectionDAO.getConnection();
-        if(con != null) System.out.println("Thành công !");
-        else System.out.println("Thất bại !");
+        if (con != null)
+            System.out.println("Thành công !");
+        else
+            System.out.println("Thất bại !");
     }
 }

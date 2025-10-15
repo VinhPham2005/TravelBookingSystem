@@ -165,12 +165,12 @@ class TourInput extends JFrame {
                 statusLabel.setForeground(Color.GREEN);
                 
                 // hiển thị lại thông tin tour đã tạo
-                 JOptionPane.showMessageDialog(this,
-                    "Tour : " + tourName + "\nGiá: " + price + " VND / người\n" + "Thời gian: " + numberOfDaysStr +
-                    "\nSố lượng hành khách: " + numberOfPassengersStr + " người" + "\nSố lượng hướng dẫn viên: "
-                    + numberOfGuidesStr + " người"
-                    + "\nĐiều kiện hướng dẫn viên: " + guideCondition,
-                    "Thông tin chuyến đi", JOptionPane.INFORMATION_MESSAGE);
+                //  JOptionPane.showMessageDialog(this,
+                //     "Tour : " + tourName + "\nGiá: " + price + " VND / người\n" + "Thời gian: " + numberOfDaysStr +
+                //     "\nSố lượng hành khách: " + numberOfPassengersStr + " người" + "\nSố lượng hướng dẫn viên: "
+                //     + numberOfGuidesStr + " người"
+                //     + "\nĐiều kiện hướng dẫn viên: " + guideCondition,
+                //     "Thông tin chuyến đi", JOptionPane.INFORMATION_MESSAGE);
 
             } catch (NumberFormatException ex) {
                 statusLabel.setText("❌️ Lỗi định dạng số!");
@@ -183,12 +183,12 @@ class TourInput extends JFrame {
                 statusLabel.setText("❌️ Lỗi không xác định!");
                 statusLabel.setForeground(Color.RED);
             }
-//            JOptionPane.showMessageDialog(this,
-//                    "Tour : " + tourName + "\nGiá: " + price + " VND / người\n" + "Thời gian: " + numberOfDaysStr +
-//                            "\nSố lượng hành khách: " + numberOfPassengersStr + " người" + "\nSố lượng hướng dẫn viên: "
-//                            + numberOfGuidesStr + " người"
-//                            + "\nĐiều kiện hướng dẫn viên: " + guideCondition,
-//                    "Thông tin chuyến đi", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                   "Tour : " + tourName + "\nGiá: " + price + " VND / người\n" + "Thời gian: " + numberOfDaysStr +
+                           "\nSố lượng hành khách: " + numberOfPassengersStr + " người" + "\nSố lượng hướng dẫn viên: "
+                           + numberOfGuidesStr + " người"
+                           + "\nĐiều kiện hướng dẫn viên: " + guideCondition,
+                   "Thông tin chuyến đi", JOptionPane.INFORMATION_MESSAGE);
         });
 
         panel.add(lblStart);

@@ -46,6 +46,30 @@ public class GuideDAO {
         return tourId;
     }
 
+    public static String findTourGuideState(String tourId) throws ClassNotFoundException {
+        String tourGuideState = null;
+        try {
+            Connection con = GetConnectionDAO.getConnection();
+            String sql = "SELECT tourGuideState FROM tour WHERE tourId = ?";
+            PreparedStatement stmt = con.prepareStatement(sql);
+            stmt.setString(1, tourId);
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                tourGuideState = rs.getString("tourGuideState");
+            } else {
+                System.out.println("Không tìm thấy tour phù hợp.");
+            }
+
+            rs.close();
+            stmt.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Lỗi truy vấn findTourId: " + e.getMessage());
+        }
+        return tourGuideState;
+    }
+
     public boolean guideCheck(Guide g, String tourId) {
         try {
             Connection con = GetConnectionDAO.getConnection();

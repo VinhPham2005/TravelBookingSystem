@@ -7,8 +7,13 @@
             <file>file:/D:/TravelBookingSystemApp/src/View/CustomerForm.java</file>
             <file>file:/D:/TravelBookingSystemApp/src/View/GuideForm.java</file>
             <file>file:/D:/TravelBookingSystemApp/src/View/ManagerForm.java</file>
-            <file>file:/D:/TravelBookingSystemApp/src/Database/Booking.sql</file>
-            <file>file:/D:/TravelBookingSystemApp/src/Database/create.sql</file>
+            <file>file:/D:/TravelBookingSystemApp/src/Guide_dao/GetConnectionDAO.java</file>
+            <file>file:/D:/TravelBookingSystemApp/src/Guide_dao/GuideDAO.java</file>
+            <file>file:/D:/TravelBookingSystemApp/src/Model/Human.java</file>
+            <file>file:/D:/TravelBookingSystemApp/src/Model/Guide.java</file>
+            <file>file:/D:/TravelBookingSystemApp/src/TourDAO/TourDBConnection.java</file>
+            <file>file:/D:/TravelBookingSystemApp/src/TourDAO/TourDAO.java</file>
+            <file>file:/D:/TravelBookingSystemApp/src/Model/Tour.java</file>
         </group>
     </open-files>
 </project-private>

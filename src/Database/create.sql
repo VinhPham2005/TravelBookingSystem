@@ -12,8 +12,11 @@ CREATE TABLE TOUR (
     numberOfDays DECIMAL,
     price DECIMAL,
     maxNumberOfPassenger INT,
+    currentPassengers INT,
     tourState ENUM('Full', 'Not Full'),
     maxNumberOfGuides INT,
+    currentGuides INT,
+    tourGuideState ENUM('FULL', 'NOT FULL'),
     languageGuideNeed VARCHAR(255),
     PRIMARY KEY (tourId)
 ); 
